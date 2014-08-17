@@ -60,7 +60,7 @@ public class MainActivity extends Activity {
             Log.d("sohail", "onReceive called");
 
             byte[] data = intent.getByteArrayExtra("message");
-            String spokenText = new String(data);
+            String spokenText = new String(data).toLowerCase().replaceAll("\\s+", "");
 
             if (!movies.containsKey(spokenText))
                 return;
@@ -116,13 +116,13 @@ public class MainActivity extends Activity {
         }
     };
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        IntentFilter iff= new IntentFilter("cast-a-movie");
-        LocalBroadcastManager.getInstance(this).registerReceiver(onNotice, iff);
-    }
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//
+//        IntentFilter iff= new IntentFilter("cast-a-movie");
+//        LocalBroadcastManager.getInstance(this).registerReceiver(onNotice, iff);
+//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,13 +143,16 @@ public class MainActivity extends Activity {
         }.execute();
 
         DiscoverCastDevices();
+
+        IntentFilter iff= new IntentFilter("cast-a-movie");
+        LocalBroadcastManager.getInstance(this).registerReceiver(onNotice, iff);
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(onNotice);
-    }
+//    @Override
+//    protected void onPause() {
+//        super.onPause();
+//        LocalBroadcastManager.getInstance(this).unregisterReceiver(onNotice);
+//    }
 
     private void DiscoverCastDevices() {
         APPLICATION_ID = "8B83D059";
@@ -253,7 +256,7 @@ public class MainActivity extends Activity {
                             String bigImageurl = video.getString(TAG_IMG_780_1200);
                             String title = video.getString(TAG_TITLE);
                             String studio = video.getString(TAG_STUDIO);
-                            mediaList.put(title.toLowerCase(), buildMediaInfo(title, studio, subTitle, videoUrl, imageurl,
+                            mediaList.put(title.toLowerCase().replaceAll("\\s+", ""), buildMediaInfo(title, studio, subTitle, videoUrl, imageurl,
                                     bigImageurl));
                         }
                     }
