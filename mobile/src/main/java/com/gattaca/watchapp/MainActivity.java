@@ -12,7 +12,15 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.support.v7.media.MediaRouter;
+
+import com.google.android.gms.cast.Cast;
+import com.google.android.gms.cast.CastDevice;
 import com.google.android.gms.cast.CastMediaControlIntent;
+import com.google.android.gms.cast.MediaInfo;
+import com.google.android.gms.cast.RemoteMediaPlayer;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,12 +33,61 @@ public class MainActivity extends Activity {
     private String APPLICATION_ID;
     private List<MediaRouter.RouteInfo> routes = new ArrayList<MediaRouter.RouteInfo>();
 
+    private MainActivity mContext = this;
+    private GoogleApiClient mApiClient;
+    private RemoteMediaPlayer mRemoteMediaPlayer;
     private BroadcastReceiver onNotice= new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {
             // intent can contain anydata
             Log.d("sohail", "onReceive called");
+
+            CastDevice device = CastDevice.getFromBundle(routes.get(0).getExtras());
+
+            Log.d("sohail", "acquiring a connection to Google Play services for " + device);
+            Cast.CastOptions.Builder apiOptionsBuilder = Cast.CastOptions.builder(device, new Cast.Listener() {});
+            mApiClient = new GoogleApiClient.Builder(mContext)
+                    .addApi(Cast.API, apiOptionsBuilder.build())
+                    .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+                        @Override
+                        public void onConnected(Bundle bundle) {
+                            Cast.CastApi.launchApplication(mApiClient, APPLICATION_ID).setResultCallback(
+                                    new ResultCallback<Cast.ApplicationConnectionResult>() {
+                                        @Override
+                                        public void onResult(Cast.ApplicationConnectionResult applicationConnectionResult) {
+                                            mRemoteMediaPlayer = new RemoteMediaPlayer();
+
+                                            MediaInfo mediaInfo = new MediaInfo.Builder("http://192.168.0.8/Movies/Memento.mp4")
+                                                    .setContentType("video/mp4")
+                                                    .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
+                                                    .build();
+
+                                            mRemoteMediaPlayer.load(mApiClient, mediaInfo, true)
+                                                    .setResultCallback(new ResultCallback<RemoteMediaPlayer.MediaChannelResult>() {
+                                                        @Override
+                                                        public void onResult(RemoteMediaPlayer.MediaChannelResult mediaChannelResult) {
+
+                                                        }
+                                                    });
+
+                                        }
+                                    });
+                        }
+
+                        @Override
+                        public void onConnectionSuspended(int i) {
+
+                        }
+                    })
+                    .addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
+                        @Override
+                        public void onConnectionFailed(ConnectionResult connectionResult) {
+
+                        }
+                    })
+                    .build();
+            mApiClient.connect();
 
         }
     };
