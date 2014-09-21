@@ -26,21 +26,20 @@ import rx.functions.Action1;
 
 public class MainActivity extends Activity {
 
-    private static final String TAG = MainActivity.class.getName();
-    public static final String PATH = "/start/Foo";
+    private static final String LOG_TAG = MainActivity.class.getName();
+    private final MessageService _messageService;
+    private static final int SPEECH_REQUEST_CODE = 0;
 
-   private GoogleApiClient googleApiClient;
+    public MainActivity() {
+       _messageService = new MessageService(this);
+   }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        googleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(Wearable.API)
-                .build();
-
-        googleApiClient.connect();
+        _messageService.Connect();
 
         final WatchViewStub stub = (WatchViewStub) findViewById(R.id.watch_view_stub);
         stub.setOnLayoutInflatedListener(new WatchViewStub.OnLayoutInflatedListener() {
@@ -56,45 +55,6 @@ public class MainActivity extends Activity {
             }
         });
     }
-
-    private void fireMessage(final String spokenText) {
-        // Send the RPC
-        PendingResult<NodeApi.GetConnectedNodesResult> nodes = Wearable.NodeApi.getConnectedNodes(googleApiClient);
-        nodes.setResultCallback(new ResultCallback<NodeApi.GetConnectedNodesResult>() {
-            @Override
-            public void onResult(NodeApi.GetConnectedNodesResult result) {
-                for (int i = 0; i < result.getNodes().size(); i++) {
-                    Node node = result.getNodes().get(i);
-                    String nName = node.getDisplayName();
-                    String nId = node.getId();
-                    Log.d(TAG, "Node name and ID: " + nName + " | " + nId);
-
-                    Wearable.MessageApi.addListener(googleApiClient, new MessageApi.MessageListener() {
-                        @Override
-                        public void onMessageReceived(MessageEvent messageEvent) {
-                            Log.d(TAG, "Message received: " + messageEvent);
-                        }
-                    });
-
-                    PendingResult<MessageApi.SendMessageResult> messageResult = Wearable.MessageApi.sendMessage(googleApiClient, node.getId(),
-                            PATH, spokenText.getBytes());
-                    messageResult.setResultCallback(new ResultCallback<MessageApi.SendMessageResult>() {
-                        @Override
-                        public void onResult(MessageApi.SendMessageResult sendMessageResult) {
-                            Status status = sendMessageResult.getStatus();
-                            Log.d(TAG, "Status: " + status.toString());
-                            if (status.getStatusCode() != WearableStatusCodes.SUCCESS) {
-                                //alertButton.setProgress(-1);
-                                //label.setText("Tap to retry. Alert not sent :(");
-                            }
-                        }
-                    });
-                }
-            }
-        });
-    }
-
-    private static final int SPEECH_REQUEST_CODE = 0;
 
     // Create an intent that can start the Speech Recognizer activity
     private void displaySpeechRecognizer() {
@@ -115,7 +75,7 @@ public class MainActivity extends Activity {
                     RecognizerIntent.EXTRA_RESULTS);
             String spokenText = results.get(0);
             // Do something with spokenText
-            fireMessage(spokenText);
+            _messageService.fireMessage(spokenText);
 
         }
         super.onActivityResult(requestCode, resultCode, data);
