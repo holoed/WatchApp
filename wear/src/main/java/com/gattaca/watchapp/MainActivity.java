@@ -8,7 +8,6 @@ import android.support.wearable.view.WatchViewStub;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -22,6 +21,8 @@ import com.google.android.gms.wearable.Wearable;
 import com.google.android.gms.wearable.WearableStatusCodes;
 
 import java.util.List;
+
+import rx.functions.Action1;
 
 public class MainActivity extends Activity {
 
@@ -46,9 +47,9 @@ public class MainActivity extends Activity {
             @Override
             public void onLayoutInflated(WatchViewStub stub) {
                 final Button btn = (Button)stub.findViewById(R.id.button);
-                btn.setOnClickListener(new View.OnClickListener() {
+                Events.click(btn).subscribe(new Action1<Object>() {
                     @Override
-                    public void onClick(View view) {
+                    public void call(Object o) {
                         displaySpeechRecognizer();
                     }
                 });

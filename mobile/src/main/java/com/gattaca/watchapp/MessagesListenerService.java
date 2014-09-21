@@ -10,7 +10,7 @@ import com.google.android.gms.wearable.WearableListenerService;
 
 public class MessagesListenerService extends WearableListenerService {
 
-    private static final String LOG_TAG = "DataLayerSample";
+    private static final String LOG_TAG = "CastVideoDataBroadcaster";
 
     public MessagesListenerService() {
 
