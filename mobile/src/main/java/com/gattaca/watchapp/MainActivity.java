@@ -11,17 +11,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 
 import com.google.android.gms.cast.MediaInfo;
 import com.google.android.gms.cast.MediaMetadata;
 
 import java.util.HashMap;
-import java.util.List;
 
 import rx.functions.Action1;
-import rx.schedulers.Schedulers;
 
 
 public class MainActivity extends Activity {
@@ -29,11 +26,13 @@ public class MainActivity extends Activity {
     private static final String LOG_TAG = "WatchAppMainActivity";
     private final MoviesCatalogService _moviesCatalogService;
     private final ChromeCastService _chromeCastService;
+    private final SearchEngine _searchEngine;
     private HashMap<String, MediaInfo> _movies;
 
     public MainActivity() {
         _moviesCatalogService = new MoviesCatalogServiceImpl();
         _chromeCastService = new ChromeCastServiceImpl(this);
+        _searchEngine = new SearchEngineImpl();
     }
 
     private BroadcastReceiver onNotice = new BroadcastReceiver() {
@@ -46,10 +45,12 @@ public class MainActivity extends Activity {
             byte[] data = intent.getByteArrayExtra("message");
             String spokenText = new String(data).toLowerCase().replaceAll("\\s+", "");
 
-            if (!_movies.containsKey(spokenText))
+            String[] foundTitles = _searchEngine.Search(spokenText);
+
+            if (foundTitles.length <= 0)
                 return;
 
-            final MediaInfo selectedMovie = _movies.get(spokenText);
+            final MediaInfo selectedMovie = _movies.get(foundTitles[0]);
 
             _chromeCastService.PlayMovie(selectedMovie);
 
@@ -73,10 +74,10 @@ public class MainActivity extends Activity {
                         _movies = moviesInfos;
                         String[] titles = new String[_movies.size()];
                         int index = 0;
-                        for (MediaInfo info: moviesInfos.values()) {
+                        for (MediaInfo info : moviesInfos.values()) {
                             titles[index++] = info.getMetadata().getString(MediaMetadata.KEY_TITLE);
                         }
-
+                        _searchEngine.Initialize(titles);
                         ArrayAdapter<String> test = new ArrayAdapter<String>(host, android.R.layout.simple_list_item_1, titles);
                         view.setAdapter(test);
                     }
