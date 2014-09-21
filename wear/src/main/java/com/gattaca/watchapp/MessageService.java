@@ -22,7 +22,7 @@ public class MessageService {
     private static final String LOG_TAG = MainActivity.class.getName();
     private GoogleApiClient _client;
     private Activity _host;
-    public static final String PATH = "/start/Foo";
+    public static final String PATH = "/start/Movie";
 
     public MessageService(Activity host) {
         _host = host;

@@ -19,6 +19,9 @@ import java.io.InputStreamReader;
 import java.net.URLConnection;
 import java.util.HashMap;
 
+import rx.Observable;
+import rx.Subscriber;
+
 /**
  * Created by epentangelo on 9/21/14.
  */
@@ -35,22 +38,26 @@ public class MoviesCatalogServiceImpl implements MoviesCatalogService {
     private static String TAG_MEDIA = "videos";
     private static String CATALOG_URL = "http://192.168.0.8:8000/Catalog"; //TODO: Move to configuration file.
 
-    private HashMap<String, MediaInfo> movies;
-
     @Override
-    public void BuildMediaInfos() {
-        new AsyncTask<Void, Void, HashMap<String, MediaInfo>>(){
+    public Observable<HashMap<String, MediaInfo>> BuildMediaInfos() {
+        return Observable.create(new Observable.OnSubscribe<HashMap<String, MediaInfo>>() {
             @Override
-            protected HashMap<String, MediaInfo> doInBackground(Void... voids) {
-                return buildMedia(CATALOG_URL);
-            }
+            public void call(final Subscriber<? super HashMap<String, MediaInfo>> subscriber) {
+                new AsyncTask<Void, Void, HashMap<String, MediaInfo>>(){
+                    @Override
+                    protected HashMap<String, MediaInfo> doInBackground(Void... voids) {
+                        return buildMedia(CATALOG_URL);
+                    }
 
-            @Override
-            protected void onPostExecute(HashMap<String, MediaInfo> mediaInfos) {
-                super.onPostExecute(mediaInfos);
-                movies = mediaInfos;
+                    @Override
+                    protected void onPostExecute(HashMap<String, MediaInfo> mediaInfos) {
+                        super.onPostExecute(mediaInfos);
+                        subscriber.onNext(mediaInfos);
+                        subscriber.onCompleted();
+                    }
+                }.execute();
             }
-        }.execute();
+        });
     }
 
     private HashMap<String, MediaInfo> buildMedia(String url) {
@@ -134,10 +141,5 @@ public class MoviesCatalogServiceImpl implements MoviesCatalogService {
                 }
             }
         }
-    }
-
-    @Override
-    public HashMap<String, MediaInfo> getMovies() {
-        return movies;
     }
 }

@@ -11,12 +11,17 @@
         android:id="@+id/text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/hello_square" />
+        android:layout_gravity="center_horizontal"
+        android:text="@string/app_title_square" />
 
-    <Button
-        android:id="@+id/button"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:layout_gravity="center"
-        android:text="Send message" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="255px">
+        <Button
+            android:id="@+id/button"
+            android:layout_gravity="center"
+            android:text="Play Movie"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+        </LinearLayout>
 </LinearLayout>

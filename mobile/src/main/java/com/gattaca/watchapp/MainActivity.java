@@ -10,10 +10,18 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 
 import com.google.android.gms.cast.MediaInfo;
+import com.google.android.gms.cast.MediaMetadata;
 
 import java.util.HashMap;
+import java.util.List;
+
+import rx.functions.Action1;
+import rx.schedulers.Schedulers;
 
 
 public class MainActivity extends Activity {
@@ -21,6 +29,7 @@ public class MainActivity extends Activity {
     private static final String LOG_TAG = "WatchAppMainActivity";
     private final MoviesCatalogService _moviesCatalogService;
     private final ChromeCastService _chromeCastService;
+    private HashMap<String, MediaInfo> _movies;
 
     public MainActivity() {
         _moviesCatalogService = new MoviesCatalogServiceImpl();
@@ -37,11 +46,10 @@ public class MainActivity extends Activity {
             byte[] data = intent.getByteArrayExtra("message");
             String spokenText = new String(data).toLowerCase().replaceAll("\\s+", "");
 
-            HashMap<String, MediaInfo> movies = _moviesCatalogService.getMovies();
-            if (!movies.containsKey(spokenText))
+            if (!_movies.containsKey(spokenText))
                 return;
 
-            final MediaInfo selectedMovie = movies.get(spokenText);
+            final MediaInfo selectedMovie = _movies.get(spokenText);
 
             _chromeCastService.PlayMovie(selectedMovie);
 
@@ -53,7 +61,26 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        _moviesCatalogService.BuildMediaInfos();
+        final Activity host = this;
+        final ListView view = (ListView)this.findViewById(R.id.movies_list);
+
+        _moviesCatalogService.BuildMediaInfos()
+                .take(1)
+                .subscribe(new Action1<HashMap<String, MediaInfo>>() {
+                    @Override
+                    public void call(HashMap<String, MediaInfo> moviesInfos) {
+                        Log.d(LOG_TAG, "Received media info list");
+                        _movies = moviesInfos;
+                        String[] titles = new String[_movies.size()];
+                        int index = 0;
+                        for (MediaInfo info: moviesInfos.values()) {
+                            titles[index++] = info.getMetadata().getString(MediaMetadata.KEY_TITLE);
+                        }
+
+                        ArrayAdapter<String> test = new ArrayAdapter<String>(host, android.R.layout.simple_list_item_1, titles);
+                        view.setAdapter(test);
+                    }
+                });
 
         _chromeCastService.DiscoverCastDevices();
 
