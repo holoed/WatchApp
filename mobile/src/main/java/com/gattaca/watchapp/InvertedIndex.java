@@ -114,7 +114,7 @@ public class InvertedIndex {
         return toMap(accumulate(makeLists(sortLs(allNumWords(InvertedIndex.numLines(lines))))));
     }
 
-    public static Integer[] search(String line, Map<String, Integer[]> index) {
+    public static Integer search(String line, Map<String, Integer[]> index) {
         String[] cleanedWords = cleanWords(line);
         List<Integer> indexes = new ArrayList<Integer>();
         for (String word : cleanedWords) {
@@ -154,6 +154,9 @@ public class InvertedIndex {
         });
 
         List<Integer> out = groupedIndexesArray[groupedIndexes.size() - 1];
-        return out.toArray(new Integer[out.size()]);
+        if (out.size() > 0)
+            return out.get(0);
+        else
+            return -1;
     }
 }
