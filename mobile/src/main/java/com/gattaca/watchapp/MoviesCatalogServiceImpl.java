@@ -84,7 +84,7 @@ public class MoviesCatalogServiceImpl implements MoviesCatalogService {
                             String bigImageUrl = video.getString(TAG_IMG_780_1200);
                             String title = video.getString(TAG_TITLE);
                             String studio = video.getString(TAG_STUDIO);
-                            mediaList.put(title.toLowerCase().replaceAll("\\s+", ""), buildMediaInfo(title, studio, subTitle, videoUrl, imageUrl,
+                            mediaList.put(title, buildMediaInfo(title, studio, subTitle, videoUrl, imageUrl,
                                     bigImageUrl));
                         }
                     }

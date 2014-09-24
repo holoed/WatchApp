@@ -43,7 +43,7 @@ public class MainActivity extends Activity {
             Log.d(LOG_TAG, "onReceive called");
 
             byte[] data = intent.getByteArrayExtra("message");
-            String spokenText = new String(data).toLowerCase().replaceAll("\\s+", "");
+            String spokenText = new String(data);
 
             String[] foundTitles = _searchEngine.Search(spokenText);
 

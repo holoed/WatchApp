@@ -153,10 +153,13 @@ public class InvertedIndex {
             }
         });
 
-        List<Integer> out = groupedIndexesArray[groupedIndexes.size() - 1];
-        if (out.size() > 0)
-            return out.get(0);
-        else
-            return -1;
+        if (groupedIndexesArray.length > 0) {
+            List<Integer> out = groupedIndexesArray[groupedIndexes.size() - 1];
+            if (out.size() > 0)
+                return out.get(0);
+            else
+                return -1;
+        }
+        else return - 1;
     }
 }
