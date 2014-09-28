@@ -17,6 +17,7 @@ import com.google.android.gms.cast.MediaInfo;
 import com.google.android.gms.cast.MediaMetadata;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 import rx.functions.Action1;
 
@@ -45,15 +46,24 @@ public class MainActivity extends Activity {
             byte[] data = intent.getByteArrayExtra("message");
             String spokenText = new String(data);
 
-            String[] foundTitles = _searchEngine.Search(spokenText);
+            if (Objects.equals(spokenText.toLowerCase(), "pause")) {
+                _chromeCastService.Pause();
+            } else if (Objects.equals(spokenText.toLowerCase(), "play")) {
+                _chromeCastService.Play();
+            } else if (Objects.equals(spokenText.toLowerCase(), "stop")) {
+                _chromeCastService.Stop();
+            } else if (Objects.equals(spokenText.toLowerCase(), "exit")) {
+                _chromeCastService.Exit();
+            } else {
+                String[] foundTitles = _searchEngine.Search(spokenText);
 
-            if (foundTitles.length <= 0)
-                return;
+                if (foundTitles.length <= 0)
+                    return;
 
-            final MediaInfo selectedMovie = _movies.get(foundTitles[0]);
+                final MediaInfo selectedMovie = _movies.get(foundTitles[0]);
 
-            _chromeCastService.PlayMovie(selectedMovie);
-
+                _chromeCastService.PlayMovie(selectedMovie);
+            }
         }
     };
 
